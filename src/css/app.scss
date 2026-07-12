@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --jw-ink: #FFFFFF;
+  --jw-panel: #FFFFFF;
+  --jw-panel-2: #F8F9FA;
+  --jw-hairline: #E0E4E8;
+  --jw-text: #2C3E50;
+  --jw-text-dim: #607D8B;
+  --jw-amber: #F39C12;
+  --jw-mint: #27AE60;
+  --jw-font-display: 'Space Grotesk', sans-serif;
+  --jw-font-body: 'Inter', sans-serif;
+  --jw-font-mono: 'IBM Plex Mono', monospace;
+  --jw-font-color: #2C3E50;
+}
+
+body {
+  font-family: var(--jw-font-body);
+  background: #F4F7F9;
+  color: var(--jw-text);
+}
+
+.jw-panel {
+  background: var(--jw-panel);
+  border: 1px solid var(--jw-hairline);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  border-color: var(--q-primary);
+  color: var(--jw-text);
+}
+
+.text-grey-4 { color: #546E7A !important; }
+.text-grey-5 { color: #78909C !important; }
+.text-grey-6 { color: #90A4AE !important; }
+.text-grey-7 { color: #B0BEC5 !important; }
+.text-white { color: #2C3E50 !important; } // Inverting white text for light theme
+
+
+// Ticker marquee animation — the page's signature element
+@keyframes jw-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.jw-ticker-track {
+  display: inline-flex;
+  animation: jw-scroll 40s linear infinite;
+  white-space: nowrap;
+}
+
+.jw-input {
+  border: 1px solid var(--jw-hairline);
+  border-radius: 4px;
+  border-color: var(--q-primary);
+  // text-shadow: 0 0 var(--jw-font-color);
+  // background: #d9a7f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jw-ticker-track {
+    animation: none;
+    overflow-x: auto;
+  }
+}
+
+.jw-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--jw-hairline);
+  border-radius: 4px;
+}
