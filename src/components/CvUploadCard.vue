@@ -1,5 +1,5 @@
 <template>
-  <div class="jw-panel rounded-borders q-pa-md">
+  <div class="jw-panel rounded-borders q-pa-md" :class="{ 'bg-grey-10': loading }">
     <div class="jw-display text-caption text-weight-bold text-grey-5 q-mb-sm" style="letter-spacing: 0.08em;">
       UNGGAH CV
     </div>
@@ -17,19 +17,6 @@
         <q-icon name="description" />
       </template>
     </q-file>
-
-    <q-input
-      v-model="query"
-      dense
-      filled
-      clearable
-      class="q-mb-sm jw-input"
-      placeholder="Posisi yang dituju (opsional), mis. 'frontend developer'"
-    >
-      <template #prepend>
-        <q-icon name="work_outline" />
-      </template>
-    </q-input>
 
     <q-btn
       label="Analisis CV & Cari Lowongan Cocok"
@@ -56,13 +43,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { analyzeCv } from 'src/services/cvApi'
 
+const props = defineProps({ filters: { type: Object, required: true } })
 const emit = defineEmits(['analyzed'])
 const $q = useQuasar()
 
 const file = ref(null)
-const query = ref('')
 const loading = ref(false)
 const error = ref('')
 
@@ -71,17 +57,10 @@ function onRejected () {
 }
 
 async function analyze () {
+  // Komponen ini sekarang hanya bertugas memberi tahu induknya
+  // bahwa file telah dipilih dan analisis harus dimulai.
+  // State loading dan pemanggilan API dikelola oleh induk.
   if (!file.value) return
-  loading.value = true
-  error.value = ''
-  try {
-    const result = await analyzeCv(file.value, { query: query.value })
-    emit('analyzed', result)
-    $q.notify({ type: 'positive', message: 'CV berhasil dianalisis.' })
-  } catch (e) {
-    error.value = e?.response?.data?.message || 'Gagal menganalisis CV. Coba lagi.'
-  } finally {
-    loading.value = false
-  }
+  emit('analyzed', { file: file.value })
 }
 </script>

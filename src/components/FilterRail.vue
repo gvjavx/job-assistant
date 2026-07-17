@@ -70,28 +70,21 @@
       class="q-mb-sm"
     />
 
-    <div class="row q-col-gutter-xs q-mb-sm">
-      <div class="col-6">
-        <q-input
-          :model-value="modelValue.minSalary"
-          @update:model-value="v => emitUpdate('minSalary', v)"
-          dense
-          filled
-          type="number"
-          label="Gaji Min"
-        />
-      </div>
-      <div class="col-6">
-        <q-input
-          :model-value="modelValue.maxSalary"
-          @update:model-value="v => emitUpdate('maxSalary', v)"
-          dense
-          filled
-          type="number"
-          label="Gaji Max"
-        />
-      </div>
-    </div>
+    <q-select
+      :model-value="modelValue.jobType"
+      @update:model-value="v => emitUpdate('jobType', v)"
+      :options="[
+        { label: 'Semua jenis pekerjaan', value: null },
+        { label: 'Penuh waktu', value: 'full-time' },
+        { label: 'Paruh waktu', value: 'part-time' }
+      ]"
+      emit-value
+      map-options
+      dense
+      filled
+      label="Jenis Pekerjaan"
+      class="q-mb-sm"
+    />
 
     <q-toggle
       :model-value="modelValue.remoteOnly"
@@ -114,6 +107,7 @@
       text-color="grey-7"
       toggle-text-color="white"
       :options="[
+        { label: 'Relevansi', value: 'relevance' },
         { label: 'Terbaru', value: 'date' },
         { label: 'Perusahaan', value: 'company' }
       ]"

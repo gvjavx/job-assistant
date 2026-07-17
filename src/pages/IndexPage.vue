@@ -52,7 +52,7 @@
 
         <div class="row items-center justify-between q-mt-md">
           <div class="jw-mono text-caption text-grey-6">
-            {{ resultSummary }}aaaaaaaa
+            {{ resultSummary }}
           </div>
           <q-btn
             flat dense round
@@ -63,6 +63,17 @@
       </div>
 
       <div class="col-12 col-md-9">
+        <q-banner
+          v-if="coverageNote"
+          dense
+          class="jw-panel rounded-borders q-mb-md text-grey-4"
+        >
+          <template #avatar>
+            <q-icon name="info" color="warning" />
+          </template>
+          {{ coverageNote }}
+        </q-banner>
+
         <div v-if="loading" class="jw-panel rounded-borders q-pa-xl text-center">
           <q-spinner color="primary" size="2em" />
           <div class="jw-mono text-caption text-grey-6 q-mt-sm">MENARIK DATA DARI SUMBER…</div>
@@ -98,6 +109,20 @@
             @open="openDetail"
           />
         </div>
+
+        <!-- Komponen Paginasi -->
+        <div class="q-pa-lg flex flex-center" v-if="!loading && jobs.length">
+          <q-pagination
+            v-if="pagination.totalPages > 1"
+            v-model="pagination.currentPage"
+            :max="pagination.totalPages"
+            :max-pages="7"
+            direction-links
+            boundary-links
+            icon-prev="arrow_left"
+            icon-next="arrow_right"
+          />
+        </div>
       </div>
     </div>
 
@@ -106,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import JobTicker from 'components/JobTicker.vue'
 import FilterRail from 'components/FilterRail.vue'
 import JobListItem from 'components/JobListItem.vue'
@@ -123,8 +148,7 @@ const filters = ref({
   category: null,
   location: '',
   posted: null,
-  minSalary: '',
-  maxSalary: '',
+  jobType: null,
   remoteOnly: false,
   sort: 'date'
 })
@@ -157,7 +181,12 @@ const categoryOptions = ref([{ label: 'Semua kategori', value: null }])
 const jobs = ref([])
 const loading = ref(false)
 const error = ref('')
-const fetchedAt = ref(null)
+const coverageNote = ref('')
+const pagination = ref({
+  currentPage: 1,
+  totalPages: 1,
+  totalItems: 0
+})
 
 const detailOpen = ref(false)
 const selectedJob = ref(null)
@@ -166,10 +195,10 @@ const tickerJobs = computed(() => jobs.value.slice(0, 12))
 
 const resultSummary = computed(() => {
   if (loading.value) return 'Memuat…'
-  if (!fetchedAt.value) return ''
-  const time = new Date(fetchedAt.value).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-  return `${jobs.value.length} LOWONGAN · DIPERBARUI ${time}`
+  if (!pagination.value.totalItems) return ''
+  return `${pagination.value.totalItems} LOWONGAN DITEMUKAN`
 })
+watch(() => pagination.value.currentPage, loadJobs)
 
 function openDetail (job) {
   selectedJob.value = job
@@ -188,23 +217,31 @@ async function loadCategories () {
   }
 }
 
-async function loadJobs () {
+async function loadJobs (isNewSearch = false) {
+  if (isNewSearch) {
+    pagination.value.currentPage = 1
+  }
   loading.value = true
   error.value = ''
   try {
     const data = await fetchJobs({
-      query: filters.value.query || undefined,
-      category: filters.value.category || undefined,
-      location: filters.value.location || undefined,
-      posted: filters.value.posted || undefined,
-      remoteOnly: filters.value.remoteOnly || undefined,
-      sort: filters.value.sort
+      query: filters.value.query,
+      category: filters.value.category,
+      location: filters.value.location,
+      posted: filters.value.posted,
+      jobType: filters.value.jobType,
+      remoteOnly: filters.value.remoteOnly,
+      sort: filters.value.sort,
+      page: pagination.value.currentPage
     })
     jobs.value = data.jobs
-    fetchedAt.value = data.fetchedAt
+    pagination.value = data.pagination
+    coverageNote.value = data.coverageNote || ''
   } catch (e) {
     error.value = e?.response?.data?.message
       || 'Backend tidak bisa dihubungi. Pastikan server/index.js sudah berjalan di port 3001.'
+    jobs.value = []
+    coverageNote.value = ''
     $q.notify({ type: 'negative', message: 'Gagal memuat lowongan', position: 'top' })
   } finally {
     loading.value = false
@@ -213,6 +250,6 @@ async function loadJobs () {
 
 onMounted(() => {
   loadCategories()
-  loadJobs()
+  loadJobs(true)
 })
 </script>

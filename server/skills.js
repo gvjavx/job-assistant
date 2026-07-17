@@ -67,6 +67,52 @@ export const WEAK_PHRASES = [
   'bertanggung jawab', 'bertugas', 'membantu dalam', 'tugas saya adalah'
 ]
 
+// Padanan Bahasa Indonesia untuk skill di atas. extractSkills() mencocokkan
+// CV/lowongan terhadap SEMUA varian di bawah ini, bukan hanya nama skill baku,
+// supaya CV tidak dianggap "minim skill" hanya karena berbeda istilah/ejaan.
+//
+// Sengaja HANYA berisi frasa (bukan singkatan 2-3 huruf seperti "JS"/"PM"/"HR"):
+// singkatan pendek gampang salah cocok di dalam token lain yang dipisah tanda
+// baca (mis. "JS" tanpa sengaja cocok di dalam "Vue.js" karena "." dianggap
+// batas kata oleh regex pencocokan skill) — lihat server/skillMatcher.test.js.
+export const SKILL_SYNONYMS = {
+  'Project Management': ['Manajemen Proyek'],
+  'Product Management': ['Manajemen Produk'],
+  'Business Analysis': ['Analisis Bisnis'],
+  'Business Development': ['Pengembangan Bisnis'],
+  'Customer Service': ['Layanan Pelanggan'],
+  'Customer Support': ['Dukungan Pelanggan'],
+  'Human Resources': ['Sumber Daya Manusia'],
+  'Financial Analysis': ['Analisis Keuangan'],
+  'Accounting': ['Akuntansi'],
+  'Bookkeeping': ['Pembukuan'],
+  'Budgeting': ['Penganggaran'],
+  'Taxation': ['Perpajakan'],
+  'Supply Chain': ['Rantai Pasok'],
+  'Procurement': ['Pengadaan'],
+  'Inventory Management': ['Manajemen Persediaan', 'Manajemen Inventaris'],
+  'Recruitment': ['Rekrutmen'],
+  'Talent Acquisition': ['Akuisisi Talenta'],
+  'Payroll': ['Penggajian'],
+  'Leadership': ['Kepemimpinan'],
+  'Communication': ['Komunikasi'],
+  'Team Management': ['Manajemen Tim'],
+  'Problem Solving': ['Pemecahan Masalah'],
+  'Critical Thinking': ['Berpikir Kritis'],
+  'Negotiation': ['Negosiasi'],
+  'Public Speaking': ['Berbicara di Depan Umum'],
+  'Time Management': ['Manajemen Waktu'],
+  'Data Analysis': ['Analisis Data'],
+  'Digital Marketing': ['Pemasaran Digital'],
+  'Content Marketing': ['Pemasaran Konten'],
+  'Social Media Marketing': ['Pemasaran Media Sosial'],
+  'Sales': ['Penjualan'],
+  'Account Management': ['Manajemen Akun'],
+  'Stakeholder Management': ['Manajemen Pemangku Kepentingan'],
+  'UI/UX': ['Desain UI/UX'],
+  'Machine Learning': ['Pembelajaran Mesin']
+}
+
 export const SECTION_KEYWORDS = {
   summary: ['ringkasan', 'summary', 'profil', 'about me', 'objective', 'tentang saya'],
   experience: ['pengalaman kerja', 'work experience', 'experience', 'riwayat pekerjaan', 'employment history'],

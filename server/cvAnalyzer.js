@@ -1,32 +1,7 @@
 import { SKILLS, STRONG_ACTION_VERBS, WEAK_PHRASES, SECTION_KEYWORDS } from './skills.js'
+import { extractSkills } from './skillMatcher.js'
 
-function escapeRegExp (str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-// Build once: a regex per skill with word boundaries, case-insensitive.
-const SKILL_MATCHERS = SKILLS.map(skill => ({
-  label: skill,
-  regex: new RegExp(`(?<![a-z0-9])${escapeRegExp(skill.toLowerCase())}(?![a-z0-9])`, 'i')
-}))
-
-export function extractSkills (text = '') {
-  const lower = text.toLowerCase()
-  const found = []
-  for (const { label, regex } of SKILL_MATCHERS) {
-    if (regex.test(lower)) found.push(label)
-  }
-
-  // Drop shorter labels that are just a substring of a longer match on the
-  // same term (e.g. "Vue" swallowed by "Vue.js") so the same mention isn't counted twice.
-  return found.filter(label => {
-    const l = label.toLowerCase()
-    return !found.some(other => {
-      const o = other.toLowerCase()
-      return o !== l && o.includes(l)
-    })
-  })
-}
+export { extractSkills }
 
 export function detectSections (text = '') {
   const lower = text.toLowerCase()
@@ -91,7 +66,11 @@ export function scoreJob (job, cvSkillsLower) {
 
   const allJobSkills = new Set([...titleSkills, ...tagSkills, ...descSkills])
   if (allJobSkills.size === 0) {
-    return { ...job, matchScore: 35, matchedSkills: [], missingSkills: [] }
+    // Tidak ada skill yang terdeteksi sama sekali di lowongan ini (umum untuk
+    // hasil Serper yang hanya berupa snippet pendek) — jangan pura-pura punya
+    // sinyal kecocokan dengan angka default. `null` ditampilkan berbeda di UI
+    // ("Skor belum tersedia") alih-alih skor 35% yang menyesatkan.
+    return { ...job, matchScore: null, matchedSkills: [], missingSkills: [] }
   }
 
   let score = 0
@@ -112,7 +91,9 @@ export function scoreJob (job, cvSkillsLower) {
 
   return {
     ...job,
-    matchScore: maxScore > 0 ? Math.round((score / maxScore) * 100) : 35,
+    // maxScore > 0 selalu benar di titik ini (allJobSkills tidak kosong, tiap
+    // skill menyumbang minimal DESC_WEIGHT) — tidak ada lagi jalur fallback 35.
+    matchScore: Math.round((score / maxScore) * 100),
     matchedSkills: matchedSkillsList,
     missingSkills: missingSkillsList.slice(0, 6)
   }
@@ -122,7 +103,8 @@ export function rankJobsForCv (jobs, profile) {
   const cvSkillsLower = new Set(profile.skills.map(s => s.toLowerCase()))
   return jobs
     .map(job => scoreJob(job, cvSkillsLower))
-    .sort((a, b) => b.matchScore - a.matchScore)
+    // Lowongan tanpa sinyal kecocokan (matchScore null) ditaruh di akhir, bukan tercampur acak.
+    .sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))
 }
 
 /**

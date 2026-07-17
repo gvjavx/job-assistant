@@ -3,8 +3,8 @@
     clickable
     class="job-list-item"
     :class="{
-      'bg-white': index % 2 === 0,
-      'bg-light': index % 2 !== 0,
+      'job-list-item--even': index % 2 === 0,
+      'job-list-item--odd': index % 2 !== 0,
       'job-list-item--applied': applied
     }"
     @click="$emit('open', job)"
@@ -32,16 +32,37 @@
     <q-item-section side>
       <div class="column items-end">
         <q-chip
+          v-if="typeof job.matchScore === 'number'"
+          dense
+          color="secondary"
+          text-color="dark"
+          class="jw-display text-weight-bold q-mb-xs"
+          :label="`${job.matchScore}%`"
+        >
+          <q-tooltip>Skor Kecocokan</q-tooltip>
+        </q-chip>
+        <q-chip
+          v-else-if="job.matchedSkills !== undefined"
+          dense
+          outline
+          color="grey-6"
+          text-color="grey-6"
+          class="jw-mono text-caption q-mb-xs"
+          label="Skor belum tersedia"
+        >
+          <q-tooltip>Tidak ada skill yang terdeteksi di lowongan ini untuk dibandingkan dengan CV-mu.</q-tooltip>
+        </q-chip>
+        <q-chip
           v-if="job.source"
           dense
           outline
-          :color="job.matchScore ? 'secondary' : 'grey-6'"
-          :text-color="job.matchScore ? 'secondary' : 'grey-6'"
+          :color="chipColor"
+          :text-color="chipColor"
           class="jw-mono text-caption q-mb-xs"
         >
           {{ job.source }}
         </q-chip>
-        <div class="text-grey-6 text-caption q-mb-xs">{{ job.postedAt ? timeAgo(job.postedAt) : '' }}</div>
+        <div class="text-grey-6 text-caption q-mb-xs">{{ job.postedAt ? timeAgo(job.postedAt) : 'Tanggal tidak tersedia' }}</div>
         <q-btn
           flat dense
           no-caps
@@ -60,7 +81,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, toRefs } from 'vue'
 import { timeAgo } from 'src/services/formatters.js'
 import { useAppliedJobs } from 'src/composables/useAppliedJobs.js'
 
@@ -77,18 +98,28 @@ const props = defineProps({
 
 defineEmits(['open'])
 
+const { job } = toRefs(props)
 const { isApplied, toggleApplied } = useAppliedJobs()
 
-const applied = computed(() => isApplied(props.job.id))
+const applied = computed(() => isApplied(job.value.id))
 
+const chipColor = computed(() => {
+  // Jika ada matchScore (dari halaman Analisa CV), warnanya 'secondary'.
+  // Jika tidak (dari halaman Cari Lowongan), warnanya abu-abu.
+  return job.value.matchScore ? 'secondary' : 'grey-6'
+})
 </script>
 <style lang="scss">
 .job-list-item {
   border-bottom: 1px solid var(--jw-border);
   transition: background-color 0.3s;
 
-  &:last-child {
-    border-bottom: none;
+  &--even {
+    background-color: white;
+  }
+
+  &--odd {
+    background-color: #f5f5f5; // Mengganti variabel $light dengan nilai defaultnya
   }
 
   &--applied {
@@ -98,6 +129,10 @@ const applied = computed(() => isApplied(props.job.id))
     &:hover {
       opacity: 1;
     }
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 </style>
